@@ -1,3 +1,24 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const scopes = fs
+  .readdirSync(path.resolve(__dirname, 'src'), { withFileTypes: true })
+  .filter((dirent) => dirent.isDirectory())
+  .map((dirent) => dirent.name.replace(/s$/, ''));
+
+// precomputed scope
+const scopeComplete = execSync('git status --porcelain || true')
+  .toString()
+  .trim()
+  .split('\n')
+  .find((r) => ~r.indexOf('M  src'))
+  ?.replace(/(\/)/g, '%%')
+  ?.match(/src%%((\w|-)*)/)?.[1]
+  ?.replace(/s$/, '');
+
 /** @type {import('cz-git').UserConfig} */
 module.exports = {
   ignores: [(commit) => commit.includes('init')],
@@ -40,9 +61,9 @@ module.exports = {
       b: 'build: bump dependencies',
       c: 'chore: update config',
     },
-    // customScopesAlign: !scopeComplete ? 'top' : 'bottom',
-    // defaultScope: scopeComplete,
-    // scopes: [...scopes, 'mock'],
+    customScopesAlign: !scopeComplete ? 'top' : 'bottom',
+    defaultScope: scopeComplete,
+    scopes: [...scopes, 'mock'],
     allowEmptyIssuePrefixs: true,
     allowCustomIssuePrefixs: true,
     messages: {
@@ -136,8 +157,8 @@ module.exports = {
     emptyIssuePrefixsAlias: 'skip',
     customIssuePrefixsAlias: 'custom',
     confirmColorize: true,
-    maxHeaderLength: Number.POSITIVE_INFINITY,
-    maxSubjectLength: Number.POSITIVE_INFINITY,
+    maxHeaderLength: Infinity,
+    maxSubjectLength: Infinity,
     minSubjectLength: 0,
     scopeOverrides: undefined,
     defaultBody: '',
