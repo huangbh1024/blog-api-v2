@@ -1,12 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UserService } from './user.service';
+import { CreateUserDto } from './user.dto';
 
-import { ConfigService } from '@nestjs/config';
-
+@ApiTags('用户')
 @Controller('user')
 export class UserController {
-  constructor(private readonly configService: ConfigService) {}
-  @Get('getTestValue')
-  getTestValue() {
-    return this.configService.get('DATABASE_USER');
+  constructor(private readonly userService: UserService) {}
+  @ApiOperation({ summary: '新增用户' })
+  @Post()
+  async create(@Body() createUserDto: CreateUserDto) {
+    await this.userService.createOrSave(createUserDto);
+    return null;
   }
 }
